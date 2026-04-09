@@ -12,7 +12,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 const { width, height } = Dimensions.get('window');
 
 // ==========================================
-// 1. MODELS (Định nghĩa đối tượng dữ liệu)
+// 1. MODELS (Đối tượng dữ liệu)
 // ==========================================
 class CommentModel {
   constructor(id, user, text, likes, time, avatarSource) {
@@ -25,29 +25,28 @@ class CommentModel {
   }
 }
 
-// Danh sách 7 bình luận tương ứng với 7 file ảnh viết thường
 const mockComments = [
   new CommentModel('1', 'martini_rond', 'How neatly I write the date in my book', '8098', '22h', require('./background_1.png')),
   new CommentModel('2', 'maxjacobson', "Now that's a skill very talented", '8098', '22h', require('./background_2.png')),
   new CommentModel('3', 'zackjohn', 'Doing this would make me so anxious', '8098', '22h', require('./background_3.png')),
   new CommentModel('4', 'kiero_d', 'Use that on r air forces to whiten them', '8098', '21h', require('./background_4.png')),
-  new CommentModel('5', 'mis_potter', 'Sjpuld’ve used that on his forces 😂', '8098', '13h', require('./background_5.png')),
-  new CommentModel('6', 'karennne', 'No prressure', '8098', '22h', require('./background_6.png')),
+  new CommentModel('5', 'mis_potter', 'Should’ve used that on his forces 😂', '8098', '13h', require('./background_5.png')),
+  new CommentModel('6', 'karennne', 'No pressure', '8098', '22h', require('./background_6.png')),
   new CommentModel('7', 'joshua_l', 'My OCD couldn’t do it', '8098', '15h', require('./background_7.png')),
 ];
 
 // ==========================================
-// 2. COMPONENTS (Các lớp giao diện nhỏ)
+// 2. COMPONENTS (Các thành phần dùng chung)
 // ==========================================
 
 class VideoSidebar extends Component {
   render() {
-    const { onCommentPress } = this.props;
+    const { onCommentPress, avatar } = this.props;
     return (
       <View style={styles.sideBar}>
-        {/* Avatar chính + Nút Follow */}
+        {/* Avatar chính & Nút Follow */}
         <View style={styles.avatarContainer}>
-          <Image source={require('./Ellipse 3.png')} style={styles.userAvatarSide} />
+          <Image source={avatar} style={styles.userAvatarSide} />
           <TouchableOpacity style={styles.followButton}>
             <Ionicons name="add" size={14} color="white" />
           </TouchableOpacity>
@@ -97,23 +96,32 @@ class CommentItem extends Component {
 }
 
 // ==========================================
-// 3. SCREENS (Các màn hình)
+// 3. SCREENS (Màn hình nội dung)
 // ==========================================
 
 class VideoScreen extends Component {
   render() {
-    const { navigation } = this.props;
+    const { navigation, type } = this.props;
+    
+    // Logic đa hình: Chọn nội dung dựa trên Tab
+    const isFollowing = type === 'FOLLOWING';
+    const bgImage = isFollowing ? require('./backgroud2.png') : require('./background.png');
+    const userHandle = isFollowing ? '@karennne' : '@craig_love';
+    const desc = isFollowing ? '#avicii #wflove' : 'The most satisfying job #fyp #satisfying #roadmarking';
+    const music = isFollowing ? 'Avicii - Waiting For Love (ft.' : 'Roddy Roundicch - The Rou...';
+    const avatar = isFollowing ? require('./background_6.png') : require('./background_1.png');
+
     return (
       <View style={styles.fullScreen}>
-        <Image source={require('./background.png')} style={styles.backgroundVideo} resizeMode="cover" />
+        <Image source={bgImage} style={styles.backgroundVideo} resizeMode="cover" />
         <View style={styles.overlay}>
-          <VideoSidebar onCommentPress={() => navigation.navigate('CommentsModal')} />
+          <VideoSidebar avatar={avatar} onCommentPress={() => navigation.navigate('CommentsModal')} />
           <View style={styles.bottomInfo}>
-            <Text style={styles.userHandle}>@craig_love</Text>
-            <Text style={styles.description}>The most satisfying job #fyp #satisfying #roadmarking</Text>
+            <Text style={styles.userHandle}>{userHandle}</Text>
+            <Text style={styles.description}>{desc}</Text>
             <View style={styles.musicRow}>
                <Ionicons name="musical-notes" size={14} color="white" />
-               <Text style={styles.musicText}>Roddy Roundicch - The Rou...</Text>
+               <Text style={styles.musicText}>{music}</Text>
             </View>
           </View>
         </View>
@@ -131,7 +139,9 @@ class CommentsModal extends Component {
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.commentSheet}>
           <View style={styles.commentHeader}>
             <Text style={{fontWeight: 'bold'}}>7 comments</Text>
-            <TouchableOpacity onPress={() => navigation.goBack()}><Ionicons name="close" size={24} color="black" /></TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Ionicons name="close" size={24} color="black" />
+            </TouchableOpacity>
           </View>
           
           <FlatList 
@@ -168,8 +178,8 @@ function HomeTopTabs({ navigation }) {
       tabBarLabelStyle: { fontWeight: 'bold', fontSize: 16 },
       tabBarIndicatorStyle: { backgroundColor: 'white', width: 30, marginLeft: width/8 }
     }}>
-      <TopTab.Screen name="Following" children={() => <VideoScreen navigation={navigation} />} />
-      <TopTab.Screen name="For You" children={() => <VideoScreen navigation={navigation} />} />
+      <TopTab.Screen name="Following" children={() => <VideoScreen navigation={navigation} type="FOLLOWING" />} />
+      <TopTab.Screen name="For You" children={() => <VideoScreen navigation={navigation} type="FOR_YOU" />} />
     </TopTab.Navigator>
   );
 }
